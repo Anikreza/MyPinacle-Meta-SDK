@@ -1,0 +1,29 @@
+{
+    "name": "mypinacle/meta-sdk",
+    "description": "Shared Meta (Facebook/Instagram) commerce code for MyPinacle apps: catalog content ids, catalog item formatting, change planning and the Catalog Batch API (items_batch, check_batch_request_status).",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0",
+        "illuminate/http": "^10.0",
+        "guzzlehttp/guzzle": "^7.5",
+        "mypinacle/tracking-sdk": "^1.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0",
+        "phpunit/phpunit": "^10.0"
+    },
+    "repositories": [
+        { "type": "vcs", "url": "https://github.com/Anikreza/MyPinacle-Tracking-SDK" }
+    ],
+    "autoload": {
+        "psr-4": { "MyPinacle\\Meta\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "MyPinacle\\Meta\\Tests\\": "tests/" }
+    },
+    "scripts": { "test": "phpunit" },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
