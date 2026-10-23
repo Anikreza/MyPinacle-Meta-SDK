@@ -45,6 +45,72 @@ final class CatalogBatchClient
         return BatchStatus::fromJson($this->json($response));
     }
 
+    /**
+     * GET /{catalog_id}/external_event_sources: ids of the pixels / apps associated with the catalog.
+     *
+     * @return list<string>
+     */
+    public function eventSources(string $catalogId): array
+    {
+        $ids = [];
+        $after = null;
+        for ($page = 0; $page < 10; $page++) {
+            $response = $this->http->timeout($this->timeout)->get(Graph::url(rawurlencode($catalogId) . '/external_event_sources'), array_filter([
+                'access_token' => $this->accessToken,
+                'fields' => 'id',
+                'limit' => 100,
+                'after' => $after,
+            ], fn ($v) => $v !== null));
+            $json = $this->json($response);
+            foreach ((array) ($json['data'] ?? []) as $row) {
+                if (isset($row['id']) && (string) $row['id'] !== '') {
+                    $ids[] = (string) $row['id'];
+                }
+            }
+            $after = $json['paging']['cursors']['after'] ?? null;
+            if (!$after || empty($json['paging']['next'])) {
+                break;
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    /**
+     * POST /{catalog_id}/external_event_sources with external_event_sources=["<pixel_id>", ...] (Meta: associate pixels /
+     * apps with a catalog so catalog ads can match their events). Adds to the existing associations.
+     *
+     * @param list<string> $sourceIds
+     */
+    public function linkEventSources(string $catalogId, array $sourceIds): bool
+    {
+        $sourceIds = array_values(array_unique(array_filter(array_map('strval', $sourceIds), fn ($id) => $id !== '')));
+        $response = $this->http->asForm()->timeout($this->timeout)->post(Graph::url(rawurlencode($catalogId) . '/external_event_sources'), [
+            'access_token' => $this->accessToken,
+            'external_event_sources' => json_encode($sourceIds),
+        ]);
+        $json = $this->json($response);
+
+        return !array_key_exists('success', $json) || (bool) $json['success'];
+    }
+
+    /**
+     * Idempotent pixel link: reads the current associations first and only POSTs when the pixel is missing.
+     *
+     * @return 'already_linked'|'linked'
+     */
+    public function ensureEventSource(string $catalogId, string $pixelId): string
+    {
+        if (in_array($pixelId, $this->eventSources($catalogId), true)) {
+            return 'already_linked';
+        }
+        if (!$this->linkEventSources($catalogId, [$pixelId])) {
+            throw new CatalogApiException('Meta did not confirm the pixel link.');
+        }
+
+        return 'linked';
+    }
+
     /** @return array<string, mixed> */
     private function json(Response $response): array
     {
