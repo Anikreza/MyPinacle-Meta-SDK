@@ -16,3 +16,8 @@ Tests: `composer install && vendor/bin/phpunit`.
 
 Errors: `MyPinacle\Meta\GraphApiException` (shared; `CatalogApiException` now extends it) with `isRateLimit`, `isTransient`, `needsReconnect`, `isOutsideWindow`, `isRecipientUnavailable`.
 
+
+## v1.3.0
+
+`SendClient::unsubscribeApp` (DELETE subscribed_apps), `grantedPermissions` / `missingPermissions` (GET me/permissions) and `SendClient::REQUIRED_PERMISSIONS`.
+

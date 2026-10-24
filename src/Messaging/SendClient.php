@@ -13,6 +13,9 @@ use MyPinacle\Tracking\Graph;
  */
 final class SendClient
 {
+    /** Token permissions for Messenger + Instagram DMs and comments (Facebook Login for Instagram, Option A). */
+    public const REQUIRED_PERMISSIONS = ['pages_show_list', 'pages_messaging', 'pages_manage_metadata', 'pages_read_engagement', 'pages_manage_engagement', 'instagram_basic', 'instagram_manage_messages', 'instagram_manage_comments', 'business_management'];
+
     public const DEFAULT_FIELDS = ['messages', 'messaging_postbacks', 'messaging_referrals', 'message_echoes', 'message_reactions', 'feed'];
 
     public function __construct(private readonly HttpFactory $http, private readonly string $pageAccessToken, private readonly int $timeout = 20)
@@ -77,6 +80,38 @@ final class SendClient
         $json = $this->post($pageId . '/subscribed_apps', ['subscribed_fields' => implode(',', $fields)]);
 
         return (bool) ($json['success'] ?? false);
+    }
+
+    /** DELETE /{page_id}/subscribed_apps: stop webhook delivery for this Page to our app (disconnect). */
+    public function unsubscribeApp(string $pageId): bool
+    {
+        $response = $this->http->timeout($this->timeout)->delete(Graph::url($pageId . '/subscribed_apps') . '?access_token=' . rawurlencode($this->pageAccessToken));
+        $json = GraphApiException::check($response);
+
+        return (bool) ($json['success'] ?? true);
+    }
+
+    /**
+     * Permissions granted to a user / System User token (GET /me/permissions).
+     *
+     * @return list<string>
+     */
+    public function grantedPermissions(): array
+    {
+        $out = [];
+        foreach ((array) ($this->get('me/permissions')['data'] ?? []) as $row) {
+            if (($row['status'] ?? '') === 'granted' && isset($row['permission'])) {
+                $out[] = (string) $row['permission'];
+            }
+        }
+
+        return $out;
+    }
+
+    /** Required permissions missing from the token (empty = all good). */
+    public function missingPermissions(array $required = self::REQUIRED_PERMISSIONS): array
+    {
+        return array_values(array_diff($required, $this->grantedPermissions()));
     }
 
     /** @return list<array<string, mixed>> apps subscribed to the Page with their fields */

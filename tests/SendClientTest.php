@@ -83,4 +83,20 @@ final class SendClientTest extends TestCase
         $e = new CatalogApiException('x', 190, 400);
         $this->assertTrue($e->needsReconnect());
     }
+    public function test_unsubscribe_and_permissions(): void
+    {
+        $http = new Factory();
+        $http->fake(function (Request $r) use ($http) {
+            if ($r->method() === 'DELETE') {
+                return $http->response(['success' => true]);
+            }
+
+            return $http->response(['data' => [['permission' => 'pages_messaging', 'status' => 'granted'], ['permission' => 'instagram_manage_messages', 'status' => 'declined']]]);
+        });
+        $c = new SendClient($http, 'T');
+        $this->assertTrue($c->unsubscribeApp('P1'));
+        $http->assertSent(fn (Request $r) => $r->method() === 'DELETE' && str_starts_with($r->url(), Graph::url('P1/subscribed_apps')));
+        $this->assertSame(['pages_messaging'], $c->grantedPermissions());
+        $this->assertSame(['instagram_manage_messages'], $c->missingPermissions(['pages_messaging', 'instagram_manage_messages']));
+    }
 }
