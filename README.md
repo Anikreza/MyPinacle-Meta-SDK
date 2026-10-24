@@ -26,3 +26,9 @@ Errors: `MyPinacle\Meta\GraphApiException` (shared; `CatalogApiException` now ex
 
 `SendClient::node` (any Graph node with fields: post message / IG caption) and `SendClient::productCard` (generic template, keep a text fallback).
 
+
+
+## v1.5.0
+
+`SendClient::deleteMessengerProfile` (DELETE messenger_profile fields, Messenger or Instagram), used by the Inventory Welcome & menu editor.
+

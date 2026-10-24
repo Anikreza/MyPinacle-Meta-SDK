@@ -112,4 +112,16 @@ final class SendClientTest extends TestCase
         $this->assertSame('P_1', (new SendClient($http, 'T'))->node('P_1', 'message')['id']);
         $http->assertSent(fn (Request $r) => str_contains($r->url(), 'fields=message'));
     }
+
+    public function test_delete_messenger_profile_fields(): void
+    {
+        $http = new Factory();
+        $http->fake(['graph.facebook.com/*' => $http->response(['result' => 'success'])]);
+        $ok = (new SendClient($http, 'T'))->deleteMessengerProfile('PAGE', ['persistent_menu', 'get_started']);
+        $ok2 = (new SendClient($http, 'T'))->deleteMessengerProfile('PAGE', ['ice_breakers'], 'instagram');
+        $this->assertTrue($ok && $ok2);
+        $http->assertSent(fn (Request $r) => $r->method() === 'DELETE' && str_starts_with($r->url(), Graph::url('PAGE/messenger_profile'))
+            && $r['fields'] === ['persistent_menu', 'get_started'] && !isset($r['platform']));
+        $http->assertSent(fn (Request $r) => $r->method() === 'DELETE' && $r['platform'] === 'instagram');
+    }
 }

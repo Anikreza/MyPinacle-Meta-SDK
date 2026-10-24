@@ -144,6 +144,17 @@ final class SendClient
         return (bool) ($json['result'] ?? $json['success'] ?? false);
     }
 
+    /** DELETE /{page_id}/messenger_profile: remove profile fields (e.g. ["persistent_menu", "get_started"]). */
+    public function deleteMessengerProfile(string $pageId, array $fields, string $platform = 'messenger'): bool
+    {
+        $body = ['fields' => array_values($fields)] + ($platform === 'instagram' ? ['platform' => 'instagram'] : []);
+        $response = $this->http->asJson()->timeout($this->timeout)
+            ->delete(Graph::url($pageId . '/messenger_profile') . '?access_token=' . rawurlencode($this->pageAccessToken), $body);
+        $json = GraphApiException::check($response);
+
+        return (bool) ($json['result'] ?? $json['success'] ?? true);
+    }
+
     /** Any Graph node by id with fields, e.g. a Page post ("message,permalink_url") or IG media ("caption,permalink"). */
     public function node(string $id, string $fields): array
     {
