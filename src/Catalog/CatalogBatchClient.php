@@ -114,18 +114,6 @@ final class CatalogBatchClient
     /** @return array<string, mixed> */
     private function json(Response $response): array
     {
-        $json = $response->json();
-        $json = is_array($json) ? $json : [];
-        if ($response->failed() || isset($json['error'])) {
-            $error = (array) ($json['error'] ?? []);
-            throw new CatalogApiException(
-                (string) ($error['message'] ?? ('HTTP ' . $response->status())),
-                (int) ($error['code'] ?? 0),
-                $response->status(),
-                isset($error['error_subcode']) ? (int) $error['error_subcode'] : null
-            );
-        }
-
-        return $json;
+        return CatalogApiException::check($response);
     }
 }

@@ -10,3 +10,9 @@ Shared Meta commerce code for MyPinacle apps (Ecom, Inventory). Framework glue s
 Graph API version comes from `MyPinacle\Tracking\Graph` (mypinacle/tracking-sdk), so every Meta call uses one version.
 
 Tests: `composer install && vendor/bin/phpunit`.
+## Messaging (v1.2.0)
+
+`MyPinacle\Meta\Messaging\SendClient` (Page access token): `send`/`sendText` (Send API, RESPONSE or MESSAGE_TAG), `senderAction`, `privateReply` (comment_id), `replyToComment` and `hideComment` (Facebook / Instagram), `subscribeApp`/`subscribedApps`, `page`, `pages` (me/accounts), `setMessengerProfile`, `profile`.
+
+Errors: `MyPinacle\Meta\GraphApiException` (shared; `CatalogApiException` now extends it) with `isRateLimit`, `isTransient`, `needsReconnect`, `isOutsideWindow`, `isRecipientUnavailable`.
+
