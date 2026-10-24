@@ -144,6 +144,28 @@ final class SendClient
         return (bool) ($json['result'] ?? $json['success'] ?? false);
     }
 
+    /** Any Graph node by id with fields, e.g. a Page post ("message,permalink_url") or IG media ("caption,permalink"). */
+    public function node(string $id, string $fields): array
+    {
+        return $this->get($id, ['fields' => $fields]);
+    }
+
+    /**
+     * Generic template (product card): title, subtitle, image, tap opens the url, one "Order" button.
+     * Works on Messenger and Instagram; callers should keep a text fallback (see GraphApiException).
+     */
+    public static function productCard(string $title, string $subtitle, ?string $imageUrl, ?string $url, string $buttonTitle = 'Order now'): array
+    {
+        $element = array_filter([
+            'title' => mb_substr($title, 0, 80),
+            'subtitle' => mb_substr($subtitle, 0, 80),
+            'image_url' => $imageUrl,
+            'default_action' => $url ? ['type' => 'web_url', 'url' => $url] : null,
+            'buttons' => $url ? [['type' => 'web_url', 'url' => $url, 'title' => mb_substr($buttonTitle, 0, 20)]] : null,
+        ], fn ($v) => $v !== null && $v !== '');
+
+        return ['attachment' => ['type' => 'template', 'payload' => ['template_type' => 'generic', 'elements' => [$element]]]];
+    }
     /** Messenger profile of a contact (name, profile_pic); IG: name, username, profile_pic. */
     public function profile(string $userId, string $fields = 'name,profile_pic'): array
     {

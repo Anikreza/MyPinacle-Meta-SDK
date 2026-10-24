@@ -21,3 +21,8 @@ Errors: `MyPinacle\Meta\GraphApiException` (shared; `CatalogApiException` now ex
 
 `SendClient::unsubscribeApp` (DELETE subscribed_apps), `grantedPermissions` / `missingPermissions` (GET me/permissions) and `SendClient::REQUIRED_PERMISSIONS`.
 
+
+## v1.4.0
+
+`SendClient::node` (any Graph node with fields: post message / IG caption) and `SendClient::productCard` (generic template, keep a text fallback).
+

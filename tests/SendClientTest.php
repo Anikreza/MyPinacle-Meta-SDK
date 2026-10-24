@@ -99,4 +99,17 @@ final class SendClientTest extends TestCase
         $this->assertSame(['pages_messaging'], $c->grantedPermissions());
         $this->assertSame(['instagram_manage_messages'], $c->missingPermissions(['pages_messaging', 'instagram_manage_messages']));
     }
+    public function test_product_card_and_node(): void
+    {
+        $card = SendClient::productCard('Bag', '৳1,200 · In stock', 'https://x.test/i.jpg', 'https://x.test/p/bag', 'অর্ডার করুন');
+        $el = $card['attachment']['payload']['elements'][0];
+        $this->assertSame('generic', $card['attachment']['payload']['template_type']);
+        $this->assertSame('https://x.test/p/bag', $el['buttons'][0]['url']);
+        $this->assertArrayNotHasKey('buttons', SendClient::productCard('Bag', 's', null, null)['attachment']['payload']['elements'][0]);
+
+        $http = new Factory();
+        $http->fake(['graph.facebook.com/*' => $http->response(['id' => 'P_1', 'message' => 'New bag https://shop.test/product/bag'])]);
+        $this->assertSame('P_1', (new SendClient($http, 'T'))->node('P_1', 'message')['id']);
+        $http->assertSent(fn (Request $r) => str_contains($r->url(), 'fields=message'));
+    }
 }
