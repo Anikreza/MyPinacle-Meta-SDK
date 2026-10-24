@@ -11,6 +11,7 @@ final class CatalogItem
     /**
      * @param list<string> $additionalImages
      * @param list<string> $internalLabels
+     * @param list<string> $videos direct video file URLs (mp4/mov/webm), sent as video: [{url}]
      */
     public function __construct(
         public readonly string $id,
@@ -32,6 +33,7 @@ final class CatalogItem
         public readonly ?string $color = null,
         public readonly ?string $size = null,
         public readonly array $internalLabels = [],
+        public readonly array $videos = [],
     ) {
     }
 
@@ -79,6 +81,10 @@ final class CatalogItem
             if ($value !== null && trim($value) !== '') {
                 $data[$field] = Format::cut($value, $field === 'product_type' ? 750 : Format::LABEL_MAX);
             }
+        }
+        if ($this->videos) {
+            // Only set when there are videos, so hashes of items without videos do not change.
+            $data['video'] = array_map(fn ($url) => ['url' => (string) $url], array_values(array_slice(array_unique($this->videos), 0, 20)));
         }
         if ($this->internalLabels) {
             // internal_label: filterable in product sets, no policy re-review on change (unlike custom_label_*).

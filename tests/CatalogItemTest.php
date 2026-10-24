@@ -94,4 +94,15 @@ final class CatalogItemTest extends TestCase
         $this->assertCount(3, BatchPlanner::chunks(array_fill(0, 6001, ['method' => 'DELETE', 'data' => ['id' => 'x']])));
         $this->assertSame([], BatchPlanner::chunks([]));
     }
+
+    public function test_videos_are_sent_as_url_objects_only_when_present(): void
+    {
+        $plain = $this->item();
+        $this->assertArrayNotHasKey('video', $plain->toData());
+        $this->assertSame($plain->hash(), $this->item(['videos' => []])->hash());
+
+        $with = $this->item(['videos' => ['https://shop.test/videos/products/a.mp4', 'https://shop.test/videos/products/a.mp4', 'https://cdn.test/b.mov']]);
+        $this->assertSame([['url' => 'https://shop.test/videos/products/a.mp4'], ['url' => 'https://cdn.test/b.mov']], $with->toData()['video']);
+        $this->assertNotSame($plain->hash(), $with->hash());
+    }
 }
