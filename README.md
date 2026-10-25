@@ -32,3 +32,9 @@ Errors: `MyPinacle\Meta\GraphApiException` (shared; `CatalogApiException` now ex
 
 `SendClient::deleteMessengerProfile` (DELETE messenger_profile fields, Messenger or Instagram), used by the Inventory Welcome & menu editor.
 
+
+## v1.7.0 WhatsApp Cloud API
+
+`MyPinacle\Meta\WhatsApp\WhatsAppClient` (System User token with whatsapp_business_messaging + whatsapp_business_management): `send` (POST /{phone_number_id}/messages), `markRead`, `phoneNumber` / `phoneNumbers` (Find my numbers), `subscribeApp` / `unsubscribeApp` (WABA subscribed_apps), `templates` (GET message_templates, paged) / `createTemplate`, `grantedPermissions`. Message builders: `text` (4096), `buttons` (max 3, titles 20), `listMessage` (max 10 rows), `ctaUrl`, `image`, `product` / `productList` (catalog linked to the WABA, ids from `Catalog\ContentId`), `template` (body parameters).
+
+`GraphApiException`: WhatsApp codes 131047 = `isOutsideWindow`, 131026 / 131021 = `isRecipientUnavailable`, 130429 / 131056 / 131048 / 80007 = `isRateLimit`, 131000 / 131016 / 133004 = `isTransient`, `isWhatsApp()`.
